@@ -75,6 +75,7 @@
     <string name="no_positions">Current track has no positions</string>
     <string name="warning">Warning</string>
     <string name="notsync_warning">Current track contains not synchronized positions. Setting new track will delete all this data.</string>
+    <string name="automator_notsync_warning">Current track contains not synchronized positions. Starting automatic logging will delete all this data.</string>
     <string name="no_track_warning">Please set up new track first</string>
     <string name="empty_trackname_warning">Track name cannot be empty</string>
     <string name="logger_running_warning">Please stop current tracking first</string>

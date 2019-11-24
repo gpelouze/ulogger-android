@@ -346,6 +346,8 @@ public class MainActivity extends AppCompatActivity {
     private void startLogAutomator() {
         if (LoggerService.isRunning()) {
             showToast(getString(R.string.logger_running_warning));
+        } else if (db.needsSync()) {
+            showAutomatorNotSyncedWarning();
         } else {
             Intent intent = new Intent(MainActivity.this, LogAutomatorService.class);
             startService(intent);
@@ -513,6 +515,21 @@ public class MainActivity extends AppCompatActivity {
                 (dialog, which) -> {
                     dialog.dismiss();
                     showTrackDialog();
+                }
+        );
+    }
+
+    /**
+     * Display warning before deleting not synchronized track
+     */
+    private void showAutomatorNotSyncedWarning() {
+        showConfirm(MainActivity.this,
+                getString(R.string.warning),
+                getString(R.string.automator_notsync_warning),
+                (dialog, which) -> {
+                    dialog.dismiss();
+                    Intent intent = new Intent(MainActivity.this, LogAutomatorService.class);
+                    startService(intent);
                 }
         );
     }
