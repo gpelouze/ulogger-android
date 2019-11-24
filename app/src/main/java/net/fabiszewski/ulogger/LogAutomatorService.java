@@ -45,6 +45,7 @@ public class LogAutomatorService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         setRunning(true);
         sendBroadcast(BROADCAST_AUTOMATOR_STARTED);
+        startLogger();
         return START_STICKY;
     }
 
@@ -53,6 +54,7 @@ public class LogAutomatorService extends Service {
      */
     @Override
     public void onDestroy() {
+        stopLogger();
         setRunning(false);
         sendBroadcast(BROADCAST_AUTOMATOR_STOPPED);
     }
@@ -60,6 +62,22 @@ public class LogAutomatorService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         throw new UnsupportedOperationException("Not implemented");
+    }
+
+    /**
+     * Start logger service
+     */
+    private void startLogger() {
+        Intent intent = new Intent(LogAutomatorService.this, LoggerService.class);
+        startService(intent);
+    }
+
+    /**
+     * Stop logger service
+     */
+    private void stopLogger() {
+        Intent intent = new Intent(LogAutomatorService.this, LoggerService.class);
+        stopService(intent);
     }
 
     /**
