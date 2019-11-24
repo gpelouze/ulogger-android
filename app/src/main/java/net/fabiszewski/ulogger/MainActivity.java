@@ -93,7 +93,12 @@ public class MainActivity extends AppCompatActivity {
     private DbAccess db;
     private static String TXT_START;
     private static String TXT_STOP;
+    private static String TXT_START_AUTO;
+    private static String TXT_STOP_AUTO;
     private Button toggleButton;
+    private Button uploadButton;
+    private Button newTrackButton;
+    private Button toggleAutoButton;
 
     private PorterDuffColorFilter redFilter;
     private PorterDuffColorFilter greenFilter;
@@ -110,10 +115,15 @@ public class MainActivity extends AppCompatActivity {
         updatePreferences();
         TXT_START = getString(R.string.button_start);
         TXT_STOP = getString(R.string.button_stop);
+        TXT_START_AUTO = getString(R.string.button_start_auto_logging);
+        TXT_STOP_AUTO = getString(R.string.button_stop_auto_logging);
         setContentView(R.layout.activity_main);
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
         toggleButton = findViewById(R.id.toggle_button);
+        uploadButton = findViewById(R.id.upload_button);
+        newTrackButton = findViewById(R.id.new_track_button);
+        toggleAutoButton = findViewById(R.id.toggle_auto_button);
         syncErrorLabel = findViewById(R.id.sync_error);
         syncLabel = findViewById(R.id.sync_status);
         syncLed = findViewById(R.id.sync_led);
@@ -145,6 +155,11 @@ public class MainActivity extends AppCompatActivity {
         } else {
             toggleButton.setText(TXT_START);
             setLocLed(LED_RED);
+        }
+        if (LogAutomatorService.isRunning()) {
+            toggleAutoButton.setText(TXT_STOP_AUTO);
+        } else {
+            toggleAutoButton.setText(TXT_START_AUTO);
         }
         registerBroadcastReceiver();
         updateStatus();
@@ -310,6 +325,35 @@ public class MainActivity extends AppCompatActivity {
     private void stopLogger() {
         // stop tracking
         Intent intent = new Intent(MainActivity.this, LoggerService.class);
+        stopService(intent);
+    }
+
+    /**
+     * Called when the user clicks the Start/Stop auto logging button
+     * @param view View
+     */
+    public void toggleAutoLogging(@SuppressWarnings("UnusedParameters") View view) {
+        if (LogAutomatorService.isRunning()) {
+            stopLogAutomator();
+        } else {
+            startLogAutomator();
+        }
+    }
+
+    /**
+     * Start log automator service
+     */
+    private void startLogAutomator() {
+        Intent intent = new Intent(MainActivity.this, LogAutomatorService.class);
+        startService(intent);
+    }
+
+    /**
+     * Stop log automator service
+     */
+    private void stopLogAutomator() {
+        // stop auto tracking
+        Intent intent = new Intent(MainActivity.this, LogAutomatorService.class);
         stopService(intent);
     }
 
@@ -664,6 +708,8 @@ public class MainActivity extends AppCompatActivity {
         filter.addAction(LoggerService.BROADCAST_LOCATION_GPS_ENABLED);
         filter.addAction(LoggerService.BROADCAST_LOCATION_NETWORK_ENABLED);
         filter.addAction(LoggerService.BROADCAST_LOCATION_PERMISSION_DENIED);
+        filter.addAction(LogAutomatorService.BROADCAST_AUTOMATOR_STARTED);
+        filter.addAction(LogAutomatorService.BROADCAST_AUTOMATOR_STOPPED);
         filter.addAction(GpxExportService.BROADCAST_EXPORT_FAILED);
         filter.addAction(GpxExportService.BROADCAST_EXPORT_DONE);
         filter.addAction(WebSyncService.BROADCAST_SYNC_DONE);
@@ -739,6 +785,20 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case LoggerService.BROADCAST_LOCATION_GPS_ENABLED:
                     showToast(getString(R.string.using_gps), Toast.LENGTH_LONG);
+                    break;
+                case LogAutomatorService.BROADCAST_AUTOMATOR_STARTED:
+                    toggleAutoButton.setText(TXT_STOP_AUTO);
+                    toggleButton.setEnabled(false);
+                    uploadButton.setEnabled(false);
+                    newTrackButton.setEnabled(false);
+                    showToast(getString(R.string.auto_tracking_started));
+                    break;
+                case LogAutomatorService.BROADCAST_AUTOMATOR_STOPPED:
+                    toggleAutoButton.setText(TXT_START_AUTO);
+                    toggleButton.setEnabled(true);
+                    uploadButton.setEnabled(true);
+                    newTrackButton.setEnabled(true);
+                    showToast(getString(R.string.auto_tracking_stopped));
                     break;
                 case GpxExportService.BROADCAST_EXPORT_DONE:
                     showToast(getString(R.string.export_done), Toast.LENGTH_LONG);
