@@ -344,8 +344,12 @@ public class MainActivity extends AppCompatActivity {
      * Start log automator service
      */
     private void startLogAutomator() {
-        Intent intent = new Intent(MainActivity.this, LogAutomatorService.class);
-        startService(intent);
+        if (LoggerService.isRunning()) {
+            showToast(getString(R.string.logger_running_warning));
+        } else {
+            Intent intent = new Intent(MainActivity.this, LogAutomatorService.class);
+            startService(intent);
+        }
     }
 
     /**
