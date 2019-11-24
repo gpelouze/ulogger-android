@@ -714,6 +714,7 @@ public class MainActivity extends AppCompatActivity {
         filter.addAction(LoggerService.BROADCAST_LOCATION_PERMISSION_DENIED);
         filter.addAction(LogAutomatorService.BROADCAST_AUTOMATOR_STARTED);
         filter.addAction(LogAutomatorService.BROADCAST_AUTOMATOR_STOPPED);
+        filter.addAction(LogAutomatorService.BROADCAST_TRACK_CHANGED);
         filter.addAction(GpxExportService.BROADCAST_EXPORT_FAILED);
         filter.addAction(GpxExportService.BROADCAST_EXPORT_DONE);
         filter.addAction(WebSyncService.BROADCAST_SYNC_DONE);
@@ -803,6 +804,15 @@ public class MainActivity extends AppCompatActivity {
                     uploadButton.setEnabled(true);
                     newTrackButton.setEnabled(true);
                     showToast(getString(R.string.auto_tracking_stopped));
+                    break;
+                case LogAutomatorService.BROADCAST_TRACK_CHANGED:
+                    db = DbAccess.getInstance();
+                    db.open(MainActivity.this);
+                    String trackName = db.getTrackName();
+                    db.close();
+                    if (trackName != null) {
+                        updateTrackLabel(trackName);
+                    }
                     break;
                 case GpxExportService.BROADCAST_EXPORT_DONE:
                     showToast(getString(R.string.export_done), Toast.LENGTH_LONG);

@@ -23,8 +23,10 @@ public class LogAutomatorService extends Service {
 
     public static final String BROADCAST_AUTOMATOR_STARTED = "net.fabiszewski.ulogger.broadcast.log_automator_started";
     public static final String BROADCAST_AUTOMATOR_STOPPED = "net.fabiszewski.ulogger.broadcast.log_automator_stopped";
+    public static final String BROADCAST_TRACK_CHANGED = "net.fabiszewski.ulogger.broadcast.track_changed";
 
     private static volatile boolean isRunning = false;
+    private DbAccess db;
 
     /**
      * Basic initializations.
@@ -46,6 +48,7 @@ public class LogAutomatorService extends Service {
         setRunning(true);
         sendBroadcast(BROADCAST_AUTOMATOR_STARTED);
         startLogger();
+        changeTrack();
         return START_STICKY;
     }
 
@@ -79,6 +82,30 @@ public class LogAutomatorService extends Service {
         Intent intent = new Intent(LogAutomatorService.this, LoggerService.class);
         stopService(intent);
     }
+
+    /**
+     * Change current track
+     */
+    private void changeTrack() {
+        boolean restart_logger = false;
+        if (LoggerService.isRunning()) {
+            restart_logger = true;
+            stopLogger();
+        }
+
+        DbAccess db = DbAccess.getInstance();
+        db.open(this);
+        db.newTrack(AutoNamePreference.getAutoTrackName(this));
+        db.close();
+
+        sendBroadcast(BROADCAST_TRACK_CHANGED);
+
+        if (restart_logger) {
+            startLogger();
+        }
+    }
+
+
 
     /**
      * Send broadcast message
